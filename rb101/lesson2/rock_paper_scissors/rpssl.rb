@@ -1,3 +1,5 @@
+require 'pry'
+
 VALID_CHOICES = %w(rock paper scissors spock lizard)
 
 WINS = { 'rock' =>  ['lizard', 'scissors'],
@@ -75,8 +77,6 @@ if input_rules.downcase == 'y' || input_rules.downcase == 'yes'
 
 end
 
-
-
 loop do # main loop
   system('clear')
   score = {player: 0, computer: 0}
@@ -126,7 +126,7 @@ loop do # main loop
   prompt("Final score: player #{score[:player]} vs computer #{score[:computer]}")
 
   puts
-
+  binding.pry
   if score[:player] == SCORE_TO_WIN
     prompt("Congratulations! You won the game!")
   else
