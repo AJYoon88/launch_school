@@ -37,6 +37,7 @@ def string_to_integer(str)
   integer_value
 end
 
+
 def string_to_signed_integer(str)
   value = nil
   
