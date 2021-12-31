@@ -6,7 +6,12 @@ hsh = {
   'marrow' => {type: 'vegetable', colors: ['green'], size: 'large'},
 }
 
-hsh.each_with_object([]) do |(k,v),arr|
-  arr << v[:colors].map
-  p arr
+a =  hsh.each_with_object([]) do |(k,v),arr|
+  arr << v[:colors].map do |color|
+    color[0].upcase + color[1..-1]
+  end
+  
+  arr << v[:size].upcase
 end
+
+p a
