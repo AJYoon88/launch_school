@@ -23,7 +23,7 @@ def displayboard(brd, score, round, first_player)
   system("clear")
   puts("Round #{round}")
   puts("Current score: player #{score[:player]} vs computer #{score[:computer]}")
-  puts("#{first_player} goes first this round.")
+  puts("#{first_player} will go first this round.")
   prompt("You are #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}")
   puts
   puts "     |     |     "
@@ -185,11 +185,11 @@ puts
 
 first_player = nil
 score = { :computer => 0, :player => 0 }
-round = 0
+round = 1
 
 loop do
   board = initializeboard
-  round += 1
+  
   first_player = select_first(round)
   current_player = first_player
   displayboard(board, score, round, first_player)
@@ -202,7 +202,7 @@ loop do
   end
 
   if who_won?(board)
-    prompt("#{who_won?(board)} won this round!")
+    prompt("#{who_won?(board)} won in Round #{round}!")
     who_won?(board) == "Computer" ? score[:computer] += 1 : score[:player] += 1
   else
     prompt("It is a tie.")
@@ -220,7 +220,11 @@ loop do
     break
   end
   
-  prompt("Would you like to continue playing next round? (y/n)")
+  round += 1
+  
+  puts
+  prompt("Would you like to continue to the next round?")
+  prompt("Enter 'n' to quit. Otherwise, press any key to continue.")
   user_input2 = gets.chomp.downcase
   break if user_input2[0] == 'n'
   system("clear")
