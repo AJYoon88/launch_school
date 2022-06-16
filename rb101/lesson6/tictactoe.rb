@@ -5,11 +5,9 @@ WINNING_CONDITIONS = [[1, 2, 3], [4, 5, 6], [7, 8, 9],
 PLAYER_MARKER = "X"
 COMPUTER_MARKER = "O"
 
-
 def prompt(msg)
   puts "=> #{msg}"
 end
-
 
 def initializeboard
   board = {}
@@ -17,13 +15,12 @@ def initializeboard
   board
 end
 
-
 # rubocop:disable Metrics/AbcSize
-def displayboard(brd, score, round, first_player)
+def displayboard(brd, score, round, player)
   system("clear")
   puts("Round #{round}")
   puts("Current score: player #{score[:player]} vs computer #{score[:computer]}")
-  puts("#{first_player} will go first this round.")
+  puts("#{player} will go first this round.")
   prompt("You are #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}")
   puts
   puts "     |     |     "
@@ -41,11 +38,9 @@ def displayboard(brd, score, round, first_player)
 end
 # rubocop:enable Metrics/AbcSize
 
-
 def emptyplaces(brd)
   brd.keys.select { |x| brd[x] == ' ' }
 end
-
 
 def who_won?(brd)
   output = nil
@@ -63,7 +58,6 @@ def who_won?(brd)
   output
 end
 
-
 def joinor(arr, delimiter = ', ', word = 'or')
   output = ""
   arr.each_with_index do |ele, idx|
@@ -78,45 +72,42 @@ def joinor(arr, delimiter = ', ', word = 'or')
   output
 end
 
-
-def computerAI(brd)
-  computer_attack = nil
-  computer_defense = nil
-  computer_other_pick = nil
-  
+def computer_attack(brd)
+  attack = nil
   WINNING_CONDITIONS.shuffle.each do |cond|
     if brd.values_at(*cond).count(COMPUTER_MARKER) == 2
-      computer_attack = brd.select{ |k, v| cond.include?(k) && v == ' ' }.keys.first
-      # break unless !computer_pick || computer_pick == ' '
-      return computer_attack if computer_attack
+      attack = brd.select { |k, v| cond.include?(k) && v == ' ' }.keys.first
+      break if attack
     end
   end
-
-  WINNING_CONDITIONS.shuffle.each do |cond|     
-    if brd.values_at(*cond).count(PLAYER_MARKER) == 2
-      computer_defense= brd.select{ |k, v| cond.include?(k) && v == ' ' }.keys.first
-      # break unless !computer_pick || computer_pick == ' '
-      return computer_defense if computer_defense
-    end
-  end
-
-  case brd[5]
-  when ' '
-    computer_other_pick = 5
-  else
-    computer_other_pick = emptyplaces(brd).sample
-  end
-  
-  computer_other_pick
+  attack
 end
 
+def computer_defense(brd)
+  defense = nil
+  WINNING_CONDITIONS.shuffle.each do |cond|
+    if brd.values_at(*cond).count(PLAYER_MARKER) == 2
+      defense = brd.select { |k, v| cond.include?(k) && v == ' ' }.keys.first
+      break if defense
+    end
+  end
+  defense
+end
 
+def computer_ai(brd)
+  attack = computer_attack(brd)
+  return attack if attack
+  defense = computer_defense(brd)
+  return defense if defense
+
+  brd[5] == ' ' ? 5 : emptyplaces(brd).sample
+end
 
 def get_user_marker_input(board)
   prompt("please select a box to place your mark.")
   prompt("Available spaces: #{joinor(emptyplaces(board))}")
   user_input = nil
-  
+
   loop do
     user_input = gets.chomp.to_i
     break if emptyplaces(board).include?(user_input)
@@ -125,19 +116,16 @@ def get_user_marker_input(board)
     # rubocop:enable Layout/LineLength
     prompt("Available spaces: #{joinor(emptyplaces(board))}")
   end
-  
- user_input
+
+  user_input
 end
 
-
-def select_first(round)
-  prompt("Please select who will go first in Round #{round}.")
-  prompt("1: Player, 2: Computer, 3: Let the computer decide!")
+def select_first
   user_input_firstplayer = nil
-  
+
   loop do
     user_input_firstplayer = gets.chomp.to_i
-    break if [ 1, 2, 3 ].include?(user_input_firstplayer)
+    break if [1, 2, 3].include?(user_input_firstplayer)
     prompt("Please enter a correct number.")
     prompt("1: Player, 2: Computer, 3: Let the computer decide!")
   end
@@ -152,22 +140,20 @@ def select_first(round)
   end
 end
 
-
 def place_piece!(board, current_player)
   marker = nil
   placement = nil
-  
+
   if current_player == "Player"
     marker = PLAYER_MARKER
     placement = get_user_marker_input(board)
   else
     marker = COMPUTER_MARKER
-    placement = computerAI(board)
+    placement = computer_ai(board)
   end
-    
+
   board[placement] = marker
 end
-
 
 def alternate_player(player)
   if player == "Player"
@@ -177,25 +163,26 @@ def alternate_player(player)
   end
 end
 
-
 prompt("Welcome to Tic-Tac-Toe")
 prompt("First to score 5 will win the game!")
 
 puts
 
-first_player = nil
-score = { :computer => 0, :player => 0 }
+prompt("Please select who will go first.")
+prompt("1: Player, 2: Computer, 3: Let the computer decide!")
+
+first_player = select_first
+
+score = { computer: 0, player: 0 }
 round = 1
 
 loop do
   board = initializeboard
-  
-  first_player = select_first(round)
   current_player = first_player
-  displayboard(board, score, round, first_player)
 
+  displayboard(board, score, round, first_player)
   loop do
-    place_piece!(board,current_player)
+    place_piece!(board, current_player)
     current_player = alternate_player(current_player)
     displayboard(board, score, round, first_player)
     break if who_won?(board) || emptyplaces(board).length == 0
@@ -207,7 +194,7 @@ loop do
   else
     prompt("It is a tie.")
   end
-  
+
   if score[:computer] == 5
     system("clear")
     prompt("Final score : player #{score[:player]} vs computer #{score[:computer]}")
@@ -219,9 +206,10 @@ loop do
     prompt("Congratulations! You won!")
     break
   end
-  
+
   round += 1
-  
+  first_player = alternate_player(first_player)
+
   puts
   prompt("Would you like to continue to the next round?")
   prompt("Enter 'n' to quit. Otherwise, press any key to continue.")
@@ -230,4 +218,4 @@ loop do
   system("clear")
 end
 
-prompt('Thank you for playing. Good bye!')
+prompt('Thank you for playing. Goodbye!')
